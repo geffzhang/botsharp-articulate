@@ -1,4 +1,5 @@
 ﻿using BotSharp.Platform.Articulate.Models;
+using BotSharp.Platform.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System;
@@ -26,7 +27,7 @@ namespace BotSharp.Platform.Articulate.Controllers
 
             var corpus = builder.ExtractorCorpus(agent);
 
-            await builder.Train(agent, corpus);
+            await builder.Train(agent, corpus, new BotTrainOptions { });
 
             agent.Status = "Ready";
 

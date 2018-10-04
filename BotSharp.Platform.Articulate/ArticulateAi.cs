@@ -26,8 +26,6 @@ namespace BotSharp.Platform.Articulate
         IPlatformBuilder<TAgent> 
         where TAgent : AgentModel
     {
-        public DialogRequestOptions RequestOptions { get; set; }
-
         public Tuple<TAgent, DomainModel> GetAgentByDomainId(String domainId)
         {
             var results = GetAllAgents();
@@ -131,25 +129,6 @@ namespace BotSharp.Platform.Articulate
             agent.Status = "Changed";
             agent.LastTraining = DateTime.UtcNow;
             return base.SaveAgent(agent);
-        }
-
-        public async Task<ModelMetaData> Train(TAgent agent, TrainingCorpus corpus)
-        {
-            string agentDir = Path.Combine(AppDomain.CurrentDomain.GetData("DataPath").ToString(), "Projects", agent.Id);
-            var model = "model_" + DateTime.UtcNow.ToString("yyyyMMdd");
-
-            var trainer = new BotTrainer();
-            agent.Corpus = corpus;
-
-            var trainOptions = new BotTrainOptions
-            {
-                AgentDir = agentDir,
-                Model = model
-            };
-
-            var info = await trainer.Train(agent, trainOptions);
-
-            return info;
         }
 
         public AiResponse TextRequest(AiRequest request)

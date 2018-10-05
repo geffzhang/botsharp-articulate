@@ -6,12 +6,10 @@ using BotSharp.Platform.Articulate.Models;
 using BotSharp.Platform.Models;
 using BotSharp.Platform.Models.AiRequest;
 using BotSharp.Platform.Models.AiResponse;
-using BotSharp.Platform.Models.MachineLearning;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace BotSharp.Platform.Articulate
@@ -26,9 +24,15 @@ namespace BotSharp.Platform.Articulate
         IPlatformBuilder<TAgent> 
         where TAgent : AgentModel
     {
-        public Tuple<TAgent, DomainModel> GetAgentByDomainId(String domainId)
+        public ArticulateAi(IAgentStorageFactory agentStorageFactory)
+          : base(agentStorageFactory)
         {
-            var results = GetAllAgents();
+
+        }
+
+        public async Task<Tuple<TAgent, DomainModel>> GetAgentByDomainId(String domainId)
+        {
+            var results = await GetAllAgents();
 
             foreach (TAgent agent in results)
             {
@@ -43,9 +47,9 @@ namespace BotSharp.Platform.Articulate
             return null;
         }
 
-        public Tuple<TAgent, DomainModel, IntentModel> GetAgentByIntentId(String intentId)
+        public async Task<Tuple<TAgent, DomainModel, IntentModel>> GetAgentByIntentId(String intentId)
         {
-            var results = GetAllAgents();
+            var results = await GetAllAgents();
 
             foreach (TAgent agent in results)
             {
@@ -62,10 +66,10 @@ namespace BotSharp.Platform.Articulate
             return null;
         }
 
-        public List<IntentModel> GetReferencedIntentsByEntity(string entityId)
+        public async Task<List<IntentModel>> GetReferencedIntentsByEntity(string entityId)
         {
             var intents = new List<IntentModel>();
-            var allAgents = GetAllAgents();
+            var allAgents = await GetAllAgents();
             foreach (TAgent agent in allAgents)
             {
                 foreach (DomainModel domain in agent.Domains)
@@ -83,7 +87,7 @@ namespace BotSharp.Platform.Articulate
             return intents;
         }
 
-        public TrainingCorpus ExtractorCorpus(TAgent agent)
+        public async Task<TrainingCorpus> ExtractorCorpus(TAgent agent)
         {
             var corpus = new TrainingCorpus();
             corpus.Entities = agent.Entities.Select(x => new TrainingEntity
@@ -124,14 +128,14 @@ namespace BotSharp.Platform.Articulate
             return corpus;
         }
 
-        public override bool SaveAgent(TAgent agent)
+        public override async Task<bool> SaveAgent(TAgent agent)
         {
             agent.Status = "Changed";
             agent.LastTraining = DateTime.UtcNow;
-            return base.SaveAgent(agent);
+            return await base.SaveAgent(agent);
         }
 
-        public AiResponse TextRequest(AiRequest request)
+        public async Task<AiResponse> TextRequest(AiRequest request)
         {
             var aiResponse = new AiResponse();
 
@@ -142,10 +146,10 @@ namespace BotSharp.Platform.Articulate
             request.AgentDir = projectPath;
             request.Model = model;
 
-            var agent = GetAgentById(request.AgentId);
+            var agent = await GetAgentById(request.AgentId);
 
             var preditor = new BotPredictor();
-            var doc = preditor.Predict(agent, request).Result;
+            var doc = await preditor.Predict(agent, request);
 
             var parameters = new Dictionary<String, Object>();
             if (doc.Sentences[0].Entities == null)

@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace BotSharp.Platform.Articulate.Controllers
 {
@@ -19,22 +20,21 @@ namespace BotSharp.Platform.Articulate.Controllers
     {
         private ArticulateAi<AgentModel> builder;
 
-        public IntentController(IConfiguration configuration)
+        public IntentController(ArticulateAi<AgentModel> platform)
         {
-            builder = new ArticulateAi<AgentModel>();
-            builder.PlatformConfig = configuration.GetSection("ArticulateAi");
+            builder = platform;
         }
 
         [HttpGet("{intentId}")]
-        public IntentViewModel GetIntent([FromRoute] string intentId)
+        public async Task<IntentViewModel> GetIntent([FromRoute] string intentId)
         {
-            var agent = builder.GetAgentByIntentId(intentId);
+            var agent = await builder.GetAgentByIntentId(intentId);
 
             return agent.Item3.ToObject<IntentViewModel>();
         }
 
         [HttpPost]
-        public IntentViewModel PostIntent()
+        public async Task<IntentViewModel> PostIntent()
         {
             IntentViewModel intent = null;
 
@@ -44,17 +44,17 @@ namespace BotSharp.Platform.Articulate.Controllers
                 intent = JsonConvert.DeserializeObject<IntentViewModel>(body);
             }
 
-            var agent = builder.GetAgentByName(intent.Agent);
+            var agent = await builder.GetAgentByName(intent.Agent);
             intent.Id = Guid.NewGuid().ToString();
             var domain = agent.Domains.First(x => x.DomainName == intent.Domain);
             domain.Intents.Add(intent.ToObject<IntentModel>());
-            builder.SaveAgent(agent);
+            await builder.SaveAgent(agent);
 
             return intent;
         }
 
         [HttpPut("{intentId}")]
-        public IntentViewModel PutIntent([FromRoute] string intentId)
+        public async Task<IntentViewModel> PutIntent([FromRoute] string intentId)
         {
             IntentViewModel intent = null;
 
@@ -64,7 +64,7 @@ namespace BotSharp.Platform.Articulate.Controllers
                 intent = JsonConvert.DeserializeObject<IntentViewModel>(body);
             }
 
-            var agent = builder.GetAgentByIntentId(intentId);
+            var agent = await builder.GetAgentByIntentId(intentId);
 
             var updateAgent = agent.Item1;
             var updateIntents = updateAgent.Domains.First(x => x.Id == agent.Item2.Id).Intents;
@@ -73,25 +73,25 @@ namespace BotSharp.Platform.Articulate.Controllers
             updateIntent.IntentName = intent.IntentName;
             updateIntent.Examples = intent.Examples;
 
-            builder.SaveAgent(updateAgent);
+            await builder.SaveAgent(updateAgent);
 
             return intent;
         }
 
         [HttpGet("{intentId}/webhook")]
-        public void GetIntentWebhook([FromRoute] string intentId)
+        public async Task GetIntentWebhook([FromRoute] string intentId)
         {
             
         }
 
         [HttpGet("{intentId}/postFormat")]
-        public void GetIntentPostFormat([FromRoute] string intentId)
+        public async Task GetIntentPostFormat([FromRoute] string intentId)
         {
             
         }
 
         [HttpGet("/agent/{agentId}/intent")]
-        public IntentPageViewModel GetAgentIntents([FromRoute] string agentId, [FromQuery] int start, [FromQuery] int limit)
+        public async Task<IntentPageViewModel> GetAgentIntents([FromRoute] string agentId, [FromQuery] int start, [FromQuery] int limit)
         {
             var intents = new List<IntentViewModel>();
 
@@ -111,15 +111,16 @@ namespace BotSharp.Platform.Articulate.Controllers
         }
 
         [HttpGet("/entity/{entityId}/intent")]
-        public List<IntentViewModel> GetReferencedIntentsByEntity([FromRoute] string entityId, [FromQuery] int start, [FromQuery] int limit)
+        public async Task<List<IntentViewModel>> GetReferencedIntentsByEntity([FromRoute] string entityId, [FromQuery] int start, [FromQuery] int limit)
         {
-            return builder.GetReferencedIntentsByEntity(entityId).Select(x => x.ToObject<IntentViewModel>()).ToList();
+            var models = await builder.GetReferencedIntentsByEntity(entityId);
+            return models.Select(x => x.ToObject<IntentViewModel>()).ToList();
         }
 
         [HttpGet("/domain/{domainId}/intent")]
-        public IntentPageViewModel GetReferencedIntentsByDomain([FromRoute] string domainId, [FromQuery] int start, [FromQuery] int limit)
+        public async Task<IntentPageViewModel> GetReferencedIntentsByDomain([FromRoute] string domainId, [FromQuery] int start, [FromQuery] int limit)
         {
-            var agent = builder.GetAgentByDomainId(domainId);
+            var agent = await builder.GetAgentByDomainId(domainId);
             var intents = agent.Item2.Intents.Select(x => x.ToObject<IntentViewModel>()).ToList();
 
             return new IntentPageViewModel { Intents = intents, Total = intents.Count };

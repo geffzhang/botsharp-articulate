@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace BotSharp.Platform.Articulate.Controllers
 {
@@ -13,7 +14,7 @@ namespace BotSharp.Platform.Articulate.Controllers
     public class SettingsController : ControllerBase
     {
         [HttpGet]
-        public SettingsModel GetSettings()
+        public async Task<SettingsModel> GetSettings()
         {
             string dataPath = Path.Combine(AppDomain.CurrentDomain.GetData("DataPath").ToString(), "Articulate", "settings.json");
 
@@ -25,7 +26,7 @@ namespace BotSharp.Platform.Articulate.Controllers
         }
 
         [HttpGet("/agent/{agentId}/settings")]
-        public SettingsModel GetSettingsByAgent([FromRoute] string agentId)
+        public async Task<SettingsModel> GetSettingsByAgent([FromRoute] string agentId)
         {
             string dataPath = Path.Combine(AppDomain.CurrentDomain.GetData("DataPath").ToString(), "Articulate", "settings.json");
 
@@ -37,7 +38,7 @@ namespace BotSharp.Platform.Articulate.Controllers
         }
 
         [HttpPut("/agent/{agentId}/settings")]
-        public SettingsModel PutSettingsByAgent([FromRoute] string agentId)
+        public async Task<SettingsModel> PutSettingsByAgent([FromRoute] string agentId)
         {
             string dataPath = Path.Combine(AppDomain.CurrentDomain.GetData("DataPath").ToString(), "Articulate", "settings.json");
 

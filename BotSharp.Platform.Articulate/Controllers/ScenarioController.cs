@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace BotSharp.Platform.Articulate.Controllers
 {
@@ -17,16 +18,15 @@ namespace BotSharp.Platform.Articulate.Controllers
     {
         private ArticulateAi<AgentModel> builder;
 
-        public ScenarioController(IConfiguration configuration)
+        public ScenarioController(ArticulateAi<AgentModel> platform)
         {
-            builder = new ArticulateAi<AgentModel>();
-            builder.PlatformConfig = configuration.GetSection("ArticulateAi");
+            builder = platform;
         }
 
         [HttpGet("/intent/{intentId}/scenario")]
-        public IntentScenarioViewModel GetIntentScenario([FromRoute] string intentId)
+        public async Task<IntentScenarioViewModel> GetIntentScenario([FromRoute] string intentId)
         {
-            var agent = builder.GetAgentByIntentId(intentId);
+            var agent = await builder.GetAgentByIntentId(intentId);
 
             var view = agent.Item3.Scenario.ToObject<IntentScenarioViewModel>();
 
@@ -38,7 +38,7 @@ namespace BotSharp.Platform.Articulate.Controllers
         }
 
         [HttpPost("/intent/{intentId}/scenario")]
-        public IntentScenarioViewModel PostIntentScenario()
+        public async Task<IntentScenarioViewModel> PostIntentScenario()
         {
             IntentScenarioViewModel scenario = null;
 
@@ -50,13 +50,13 @@ namespace BotSharp.Platform.Articulate.Controllers
 
             scenario.Id = Guid.NewGuid().ToString();
 
-            var agent = builder.GetAgentByName(scenario.Agent);
+            var agent = await builder.GetAgentByName(scenario.Agent);
 
             var domain = agent.Domains.FirstOrDefault(x => x.DomainName == scenario.Domain);
             var intent = domain.Intents.FirstOrDefault(x => x.IntentName == scenario.Intent);
             intent.Scenario = scenario.ToObject<ScenarioModel>();
 
-            builder.SaveAgent(agent);
+            await builder.SaveAgent(agent);
 
             return scenario;
         }

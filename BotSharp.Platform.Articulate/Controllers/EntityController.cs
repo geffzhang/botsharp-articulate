@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace BotSharp.Platform.Articulate.Controllers
 {
@@ -16,14 +17,13 @@ namespace BotSharp.Platform.Articulate.Controllers
     {
         private ArticulateAi<AgentModel> builder;
 
-        public EntityController(IConfiguration configuration)
+        public EntityController(ArticulateAi<AgentModel> platform)
         {
-            builder = new ArticulateAi<AgentModel>();
-            builder.PlatformConfig = configuration.GetSection("ArticulateAi");
+            builder = platform;
         }
 
         [HttpGet("{entityId}")]
-        public EntityModel GetEntity([FromRoute] string entityId)
+        public async Task<EntityModel> GetEntity([FromRoute] string entityId)
         {
             string dataDir = Path.Combine(AppDomain.CurrentDomain.GetData("DataPath").ToString(), "Articulate");
 
@@ -37,14 +37,14 @@ namespace BotSharp.Platform.Articulate.Controllers
         }
 
         [HttpGet("/agent/{agentId}/entity")]
-        public EntityPageViewModel GetAgentEntities([FromRoute] string agentId, [FromQuery] int start, [FromQuery] int limit)
+        public async Task<EntityPageViewModel> GetAgentEntities([FromRoute] string agentId, [FromQuery] int start, [FromQuery] int limit)
         {
-            var agent = builder.GetAgentById(agentId);
+            var agent = await builder.GetAgentById(agentId);
             return new EntityPageViewModel { Entities = agent.Entities.Select(x => x as EntityModel).ToList(), Total = agent.Entities.Count };
         }
 
         [HttpPost]
-        public EntityModel PostEntity()
+        public async Task<EntityModel> PostEntity()
         {
             EntityModel entity = null;
 
@@ -54,11 +54,11 @@ namespace BotSharp.Platform.Articulate.Controllers
                 entity = JsonConvert.DeserializeObject<EntityModel>(body);
             }
 
-            var agent = builder.GetAgentByName(entity.Agent);
+            var agent = await builder.GetAgentByName(entity.Agent);
             entity.Id = Guid.NewGuid().ToString();
             agent.Entities.Add(entity);
 
-            builder.SaveAgent(agent);
+            await builder.SaveAgent(agent);
 
             return entity;
         }

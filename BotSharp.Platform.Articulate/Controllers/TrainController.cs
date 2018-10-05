@@ -14,24 +14,23 @@ namespace BotSharp.Platform.Articulate.Controllers
     {
         private ArticulateAi<AgentModel> builder;
 
-        public TrainController(IConfiguration configuration)
+        public TrainController(ArticulateAi<AgentModel> articulateAi)
         {
-            builder = new ArticulateAi<AgentModel>();
-            builder.PlatformConfig = configuration.GetSection("ArticulateAi");
+            builder = articulateAi;
         }
 
         [HttpGet("/agent/{agentId}/train")]
         public async Task<AgentModel> TrainAgent([FromRoute] string agentId)
         {
-            var agent = builder.GetAgentById(agentId);
+            var agent = await builder.GetAgentById(agentId);
 
-            var corpus = builder.ExtractorCorpus(agent);
+            var corpus = await builder.ExtractorCorpus(agent);
 
             await builder.Train(agent, corpus, new BotTrainOptions { });
 
             agent.Status = "Ready";
 
-            builder.SaveAgent(agent);
+           await  builder.SaveAgent(agent);
 
             return agent;
         }

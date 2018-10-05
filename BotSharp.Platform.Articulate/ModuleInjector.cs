@@ -10,7 +10,7 @@ using System;
 
 namespace BotSharp.Platform.Articulate
 {
-    public class ArticulateModule : IModule
+    public class ModuleInjector : IModule
     {
         public void ConfigureServices(IServiceCollection services, IConfiguration config)
         {
@@ -19,6 +19,7 @@ namespace BotSharp.Platform.Articulate
 
             NLUSetting setting = new NLUSetting();
             config.GetSection("articulateAi").Bind(setting);
+
             services.AddSingleton(setting);
             services.AddSingleton<AgentStorageInMemory<AgentModel>>();
             services.AddSingleton<AgentStorageInRedis<AgentModel>>();

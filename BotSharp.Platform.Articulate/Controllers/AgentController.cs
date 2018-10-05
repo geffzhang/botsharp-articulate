@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace BotSharp.Platform.Articulate.Controllers
 {
@@ -23,14 +24,13 @@ namespace BotSharp.Platform.Articulate.Controllers
         /// Initialize agent controller and get a platform instance
         /// </summary>
         /// <param name="platform"></param>
-        public AgentController(IConfiguration configuration)
+        public AgentController(ArticulateAi<AgentModel> platform)
         {
-            builder = new ArticulateAi<AgentModel>();
-            builder.PlatformConfig = configuration.GetSection("ArticulateAi");
+            builder = platform;
         }
 
         [HttpPost]
-        public AgentModel PostAgent()
+        public async Task<AgentModel> PostAgent()
         {
             AgentModel agent = null;
 
@@ -43,32 +43,32 @@ namespace BotSharp.Platform.Articulate.Controllers
             // convert to standard Agent structure
             agent.Id = new Random().Next(Int32.MaxValue).ToString();
             agent.Name = agent.AgentName;
-            builder.SaveAgent(agent);
+            await builder.SaveAgent(agent);
 
             return agent;
         }
 
         [HttpGet]
-        public List<AgentModel> GetAgent()
+        public async Task<List<AgentModel>> GetAgent()
         {
-            var results = builder.GetAllAgents();
+            var results = await builder.GetAllAgents();
             var agents = results.ToList();
 
             return agents;
         }
 
         [HttpGet("{agentId}")]
-        public AgentModel GetAgentById([FromRoute] string agentId)
+        public async Task<AgentModel> GetAgentById([FromRoute] string agentId)
         {
-            var agent = builder.GetAgentById(agentId);
+            var agent = await builder.GetAgentById(agentId);
             
             return agent;
         }
 
         [HttpGet("name/{agentName}")]
-        public AgentModel GetAgentByName([FromRoute] string agentName)
+        public async Task<AgentModel> GetAgentByName([FromRoute] string agentName)
         {
-            var agent = builder.GetAgentByName(agentName);
+            var agent = await builder.GetAgentByName(agentName);
             
             return agent;
         }

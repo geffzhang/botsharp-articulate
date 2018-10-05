@@ -10,6 +10,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Console = Colorful.Console;
 
 namespace BotSharp.Platform.Articulate.Controllers
@@ -19,20 +20,19 @@ namespace BotSharp.Platform.Articulate.Controllers
     {
         private ArticulateAi<AgentModel> builder;
 
-        public ParseControllercs(IConfiguration configuration)
+        public ParseControllercs(ArticulateAi<AgentModel> platform)
         {
-            builder = new ArticulateAi<AgentModel>();
-            builder.PlatformConfig = configuration.GetSection("ArticulateAi");
+            builder = platform;
         }
 
         [HttpGet("/agent/{agentId}/converse")]
-        public ActionResult ParseText([FromRoute] string agentId, [FromQuery] string text, [FromQuery] string sessionId)
+        public async Task<ActionResult> ParseText([FromRoute] string agentId, [FromQuery] string text, [FromQuery] string sessionId)
         {
             var response = new ResponseViewModel();
 
             Console.WriteLine($"Got message from {Request.Host}: {text}", Color.Green);
 
-            var aiResponse = builder.TextRequest(new AiRequest
+            var aiResponse = await builder.TextRequest(new AiRequest
             {
                 AgentId = agentId,
                 Text = text

@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace BotSharp.Platform.Articulate.Controllers
 {
@@ -17,14 +18,13 @@ namespace BotSharp.Platform.Articulate.Controllers
     {
         private ArticulateAi<AgentModel> builder;
 
-        public DomainController(IConfiguration configuration)
+        public DomainController(ArticulateAi<AgentModel> platform)
         {
-            builder = new ArticulateAi<AgentModel>();
-            builder.PlatformConfig = configuration.GetSection("ArticulateAi");
+            builder = platform;
         }
 
         [HttpGet("{domainId}")]
-        public DomainModel GetDomain([FromRoute] int domainId)
+        public async Task<DomainModel> GetDomain([FromRoute] int domainId)
         {
             string dataDir = Path.Combine(AppDomain.CurrentDomain.GetData("DataPath").ToString(), "Articulate");
 
@@ -37,7 +37,7 @@ namespace BotSharp.Platform.Articulate.Controllers
         }
 
         [HttpPost]
-        public DomainModel PostDomain()
+        public async Task<DomainModel> PostDomain()
         {
             DomainModel domain = null;
 
@@ -47,18 +47,18 @@ namespace BotSharp.Platform.Articulate.Controllers
                 domain = JsonConvert.DeserializeObject<DomainModel>(body);
             }
 
-            var agent = builder.GetAgentByName(domain.Agent);
+            var agent = await builder.GetAgentByName(domain.Agent);
             domain.Id = Guid.NewGuid().ToString();
             (agent as AgentModel).Domains.Add(domain);
-            builder.SaveAgent(agent);
+            await builder.SaveAgent(agent);
 
             return domain;
         }
 
         [HttpGet("/agent/{agentId}/domain")]
-        public DomainPageViewModel GetAgentDomains([FromRoute] string agentId, [FromQuery] int start, [FromQuery] int limit)
+        public async Task<DomainPageViewModel> GetAgentDomains([FromRoute] string agentId, [FromQuery] int start, [FromQuery] int limit)
         {
-            var agent = builder.GetAgentById(agentId);
+            var agent = await builder.GetAgentById(agentId);
 
             return new DomainPageViewModel { Domains = agent.Domains, Total = agent.Domains.Count };
         }

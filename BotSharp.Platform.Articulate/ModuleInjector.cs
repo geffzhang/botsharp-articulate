@@ -14,10 +14,10 @@ namespace BotSharp.Platform.Articulate
     {
         public void ConfigureServices(IServiceCollection services, IConfiguration config)
         {
-            services.TryAddSingleton<IAgentStorageFactory, AgentStorageFactory>();
+            services.TryAddSingleton<IAgentStorageFactory<AgentModel>, AgentStorageFactory<AgentModel>>();
             services.TryAddSingleton<ArticulateAi<AgentModel>>();
 
-            NLUSetting setting = new NLUSetting();
+            var setting = new PlatformSettings();
             config.GetSection("articulateAi").Bind(setting);
 
             services.AddSingleton(setting);

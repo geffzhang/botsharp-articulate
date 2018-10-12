@@ -1,4 +1,5 @@
 ﻿using BotSharp.Core;
+using BotSharp.Core.AgentStorage;
 using BotSharp.Core.Modules;
 using BotSharp.Platform.Abstraction;
 using BotSharp.Platform.Articulate.Models;
@@ -14,34 +15,9 @@ namespace BotSharp.Platform.Articulate
     {
         public void ConfigureServices(IServiceCollection services, IConfiguration config)
         {
-            services.TryAddSingleton<IAgentStorageFactory<AgentModel>, AgentStorageFactory<AgentModel>>();
-            services.TryAddSingleton<ArticulateAi<AgentModel>>();
-
-            var setting = new PlatformSettings();
-            config.GetSection("articulateAi").Bind(setting);
-
-            services.AddSingleton(setting);
-            services.AddSingleton<AgentStorageInMemory<AgentModel>>();
-            services.AddSingleton<AgentStorageInRedis<AgentModel>>();
-            services.AddSingleton(factory =>
-            {
-                Func<string, IAgentStorage<AgentModel>> accesor = key =>
-                {
-                    if (key.Equals("AgentStorageInRedis"))
-                    {
-                        return factory.GetService<AgentStorageInRedis<AgentModel>>();
-                    }
-                    else if (key.Equals("AgentStorageInMemory"))
-                    {
-                        return factory.GetService<AgentStorageInMemory<AgentModel>>();
-                    }
-                    else
-                    {
-                        throw new ArgumentException($"Not Support key : {key}");
-                    }
-                };
-                return accesor;
-            });
+            services.AddSingleton<ArticulateAi<AgentModel>>();
+            AgentStorageServiceRegister.Register<AgentModel>(services);
+            PlatformConfigServiceRegister.Register<PlatformSettings>("articulateAi", services, config);
         }
 
         public void Configure(IApplicationBuilder app)

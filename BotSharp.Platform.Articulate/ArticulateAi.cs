@@ -24,8 +24,8 @@ namespace BotSharp.Platform.Articulate
         IPlatformBuilder<TAgent> 
         where TAgent : AgentModel
     {
-        public ArticulateAi(IAgentStorageFactory<TAgent> agentStorageFactory)
-          : base(agentStorageFactory)
+        public ArticulateAi(IAgentStorageFactory<TAgent> agentStorageFactory, IPlatformSettings settings)
+            : base(agentStorageFactory, settings)
         {
 
         }

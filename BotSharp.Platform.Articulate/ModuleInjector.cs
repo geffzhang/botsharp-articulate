@@ -4,6 +4,7 @@ using BotSharp.Core.Modules;
 using BotSharp.Platform.Abstraction;
 using BotSharp.Platform.Articulate.Models;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -20,7 +21,7 @@ namespace BotSharp.Platform.Articulate
             PlatformConfigServiceRegister.Register<PlatformSettings>("articulateAi", services, config);
         }
 
-        public void Configure(IApplicationBuilder app)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
 
         }

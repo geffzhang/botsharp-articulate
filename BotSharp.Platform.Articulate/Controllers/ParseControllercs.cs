@@ -1,5 +1,4 @@
-﻿using BotSharp.NLP;
-using BotSharp.Platform.Articulate.Models;
+﻿using BotSharp.Platform.Articulate.Models;
 using BotSharp.Platform.Articulate.ViewModels;
 using BotSharp.Platform.Models.AiRequest;
 using Microsoft.AspNetCore.Mvc;
@@ -38,7 +37,7 @@ namespace BotSharp.Platform.Articulate.Controllers
                 Text = text
             });
 
-            response.TextResponse = aiResponse.Speech;
+            response.TextResponse = aiResponse.Text;
 
             return Ok(response);
         }

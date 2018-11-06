@@ -1,11 +1,11 @@
 ﻿using BotSharp.Core;
 using BotSharp.Core.Engines;
-using BotSharp.Models.NLP;
 using BotSharp.Platform.Abstraction;
 using BotSharp.Platform.Articulate.Models;
 using BotSharp.Platform.Models;
 using BotSharp.Platform.Models.AiRequest;
 using BotSharp.Platform.Models.AiResponse;
+using BotSharp.Platform.Models.Entities;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -159,7 +159,7 @@ namespace BotSharp.Platform.Articulate
             doc.Sentences[0].Entities.ForEach(x => parameters[x.Entity] = x.Value);
 
             aiResponse.Intent = doc.Sentences[0].Intent.Label;
-            aiResponse.Speech = aiResponse.Intent;
+            aiResponse.Text = aiResponse.Intent;
 
             return aiResponse;
         }
